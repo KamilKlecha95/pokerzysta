@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.invoke
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -16,10 +17,10 @@ kotlin {
         }
     }
 
-    js {
-        browser()
-        binaries.executable()
-    }
+//    js {
+//        browser()
+//        binaries.executable()
+//    }
 
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
@@ -28,6 +29,16 @@ kotlin {
     }
 
     sourceSets {
+        val wasmJsMain by getting {
+            dependencies {
+                implementation(npm("firebase", "10.8.1"))
+            }
+        }
+        val jsMain by getting {
+            dependencies {
+                implementation(npm("firebase", "10.8.1"))
+            }
+        }
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)
