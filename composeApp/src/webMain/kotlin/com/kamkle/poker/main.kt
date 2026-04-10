@@ -7,9 +7,9 @@ import androidx.compose.ui.window.ComposeViewport
 fun main() {
     ComposeViewport {
         initializeFirebase(
-            apiKey = "AIzaSyTwojPrawdziwyKlucz...",
-            projectId = "twoj-id-projektu",
-            dbUrl = "https://twoj-projekt-default-rtdb.europe-west1.firebasedatabase.app"
+            apiKey = "AIzaSyB5TueU3MPZtX1MIF7jT7xpQCwG5zXb3Eg...",
+            projectId = "pokerzysta-c3416",
+            dbUrl = "https://pokerzysta-c3416-default-rtdb.firebaseio.com"
         )
         App()
     }

@@ -34,11 +34,7 @@ kotlin {
                 implementation(npm("firebase", "10.8.1"))
             }
         }
-        val jsMain by getting {
-            dependencies {
-                implementation(npm("firebase", "10.8.1"))
-            }
-        }
+
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.activity.compose)

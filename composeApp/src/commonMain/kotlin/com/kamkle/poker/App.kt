@@ -14,10 +14,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.painterResource
 
 import poker.composeapp.generated.resources.Res
 import poker.composeapp.generated.resources.compose_multiplatform
+import kotlin.time.Clock
 
 @Composable
 @Preview
@@ -34,6 +37,28 @@ fun App() {
             Button(onClick = { showContent = !showContent }) {
                 Text("Click me!")
             }
+
+            var data by remember {mutableStateOf(listOf<String>())}
+            val db = remember{getPlatformDatabase()}
+            LaunchedEffect(Unit){
+                db.observePath("/").collectLatest {
+                    data = db.getDataAt("test").map { it.content }
+
+                }
+            }
+
+
+            var state by remember { mutableStateOf(false) }
+            if(state){
+                LaunchedEffect(state){
+                    delay(3000)
+                    db.writeMessage("elo", Clock.System.now().toString())
+                    delay(3000)
+                    db.writeMessage("elo", Clock.System.now().toString())
+                    delay(6000)
+                    db.writeMessage("elo", Clock.System.now().toString())
+                }
+            }
             AnimatedVisibility(showContent) {
                 val greeting = remember { Greeting().greet() }
                 Column(
@@ -42,6 +67,14 @@ fun App() {
                 ) {
                     Image(painterResource(Res.drawable.compose_multiplatform), null)
                     Text("Compose: $greeting")
+                    Button(onClick = {
+                        state = true
+                    }){
+                        Text("Klikaj")
+                    }
+                    data.forEach {
+                        Text(it)
+                    }
                 }
             }
         }
