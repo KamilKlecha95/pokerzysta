@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.safeContentPadding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -16,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.painterResource
 
 import poker.composeapp.generated.resources.Res
@@ -38,43 +41,40 @@ fun App() {
                 Text("Click me!")
             }
 
-            var data by remember {mutableStateOf(listOf<String>())}
-            val db = remember{getPlatformDatabase()}
-            LaunchedEffect(Unit){
+            var data by remember { mutableStateOf(listOf<DatabaseEntry>()) }
+            val db = remember { getPlatformDatabase() }
+            LaunchedEffect(Unit) {
                 db.observePath("/").collectLatest {
-                    data = db.getDataAt("test").map { it.content }
-
+                    data = it
                 }
             }
+            val coroutineScope = rememberCoroutineScope()
 
 
             var state by remember { mutableStateOf(false) }
-            if(state){
-                LaunchedEffect(state){
-                    delay(3000)
-                    db.writeMessage("elo", Clock.System.now().toString())
-                    delay(3000)
-                    db.writeMessage("elo", Clock.System.now().toString())
-                    delay(6000)
-                    db.writeMessage("elo", Clock.System.now().toString())
+            val greeting = remember { Greeting().greet() }
+            Column(
+                modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Image(painterResource(Res.drawable.compose_multiplatform), null)
+                Text("Compose: $greeting")
+                Button(onClick = {
+                    coroutineScope.launch {
+                        db.writeMessage("Kamil2","2")
+                    }
+                }) {
+                    Text("2")
                 }
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                    Button(onClick = {
-                        state = true
-                    }){
-                        Text("Klikaj")
+                Button(onClick = {
+                    coroutineScope.launch {
+                        db.writeMessage("Radek3","4")
                     }
-                    data.forEach {
-                        Text(it)
-                    }
+                }) {
+                    Text("4")
+                }
+                data.forEach {
+                    Text("${it.id} ${it.content}" )
                 }
             }
         }

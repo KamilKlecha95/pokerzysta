@@ -12,15 +12,15 @@ external fun get(reference: JsAny): Promise<DataSnapshot>
 
 // Interfejs dla wyniku z Firebase
 external interface DataSnapshot : JsAny {
-    // Klucz węzła (property 'key' w JS)
     val key: String?
 
-    fun `val`(): JsAny?
+    @JsName("val")
+    fun getValue(): String?
+
     fun exists(): Boolean
     fun forEach(action: (child: DataSnapshot) -> Boolean): Boolean
 }
 
-// Funkcje pomocnicze (poza plikiem JsModule, najlepiej w pliku z @JsFun)
 @JsFun("(snapshot) => snapshot.key")
 external fun getSnapshotKey(snapshot: DataSnapshot): String
 

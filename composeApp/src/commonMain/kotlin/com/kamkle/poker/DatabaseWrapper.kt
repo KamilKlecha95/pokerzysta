@@ -1,7 +1,9 @@
 package com.kamkle.poker
 
+import androidx.compose.runtime.Immutable
 import kotlinx.coroutines.flow.Flow
 
+@Immutable
 data class DatabaseEntry(
     val id: String,
     val content: String

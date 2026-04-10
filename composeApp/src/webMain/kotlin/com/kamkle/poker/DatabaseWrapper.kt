@@ -1,13 +1,13 @@
 package com.kamkle.poker
+
+import kotlinx.browser.document
 import kotlinx.coroutines.await
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 
-// 1. Implementacja inicjalizacji Firebase
 @OptIn(ExperimentalWasmJsInterop::class)
 actual fun initializeFirebase(apiKey: String, projectId: String, dbUrl: String) {
-    // Wywołujemy naszą bezpieczną dla Wasm funkcję pomocniczą
     val options = createFirebaseOptions(apiKey, projectId, dbUrl)
     initializeApp(options)
 }
@@ -25,7 +25,7 @@ class WebFirebaseDatabase : MyDatabase {
     override suspend fun writeMessage(path: String, message: String) {
         val dbRef = ref(db, path)
 
-        val result : JsAny = set(dbRef, message.toJsString()).await()
+        set(dbRef, message.toJsString()).await<JsAny>()
     }
 
     override suspend fun getDataAt(path: String): List<DatabaseEntry> {
@@ -35,43 +35,37 @@ class WebFirebaseDatabase : MyDatabase {
         val result = mutableListOf<DatabaseEntry>()
         consoleLog(snapshot)
         if (snapshot.exists()) {
-            // forEach w RTDB iteruje po kluczach Twojego obiektu
             snapshot.forEach {
-                consoleLog(it.`val`())
-                val v = jsToString(it.`val`())
-            result.add(DatabaseEntry(it.key?: "", v))
+                consoleLog(it.getValue()?.toJsString())
+                result.add(DatabaseEntry(it.key ?: "", it.getValue().orEmpty()))
                 false
 
             }
         }
-        print("result $result")
 
         return result
     }
 
-   override fun observePath(path: String): Flow<List<DatabaseEntry>> = callbackFlow {
+    override fun observePath(path: String): Flow<List<DatabaseEntry>> = callbackFlow {
         val pathRef = ref(db, path)
-        val result = mutableListOf<DatabaseEntry>()
-
         val unsubscribe = onValue(
             query = pathRef,
             callback = { snapshot ->
                 if (snapshot.exists()) {
+                    val result = mutableListOf<DatabaseEntry>()
+
                     snapshot.forEach {
-                        consoleLog(it.`val`())
-                        val v = com.kamkle.poker.jsToString(it.`val`())
-                        result.add(DatabaseEntry(it.key ?: "", v))
+                        consoleLog(it.getValue()?.toJsString())
+                        result.add(DatabaseEntry(it.key ?: "", it.getValue().orEmpty()))
                         false
                     }
                     trySend(result)
-
 
                 } else {
                     print("empty")
                 }
             },
             cancelCallback = { error ->
-                // Tutaj bezpiecznie dobieramy się do message z JsError
                 close(RuntimeException("Firebase Error: ${error.message}"))
             }
         )
@@ -83,6 +77,3 @@ class WebFirebaseDatabase : MyDatabase {
     }
 
 }
-
-@JsFun("(obj) => String(obj)")
-external fun jsToString(obj: JsAny?): String
